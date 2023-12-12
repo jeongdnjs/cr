@@ -8,7 +8,7 @@
 double robot_x = 0.0;
 double robot_y = 0.0;
 double robot_theta = 0.0;
-
+wheel_resolution = 0;
 void LoadParameters(void)
 {
   std::ifstream inFile("/home/ubuntu/robot_ws/src/tutorial_ros2_motor/data/motor_input.txt");
