@@ -464,7 +464,7 @@ void InfoMotors()
   printf("ACC  :%11.0d\n", acceleration);
   printf("\n");
 }
-
+/*
 class RosCommunicator : public rclcpp::Node
 {
 public:
@@ -522,15 +522,14 @@ void RosCommunicator::TeleopCallback(const std_msgs::msg::Int64MultiArray::Share
   AccelController(1, tmp_dir1, msg->data[2]);
   AccelController(2, tmp_dir2, msg->data[3]);
 }
-
+*/
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
-  Initialize();
-  rclcpp::spin(std::make_shared<RosCommunicator>());
-
-  rclcpp::shutdown();
-  MotorController(1, true, 0);
-  MotorController(2, true, 0);
-  return 0;
+    Initialize();
+    rclcpp::spin(std::make_shared<RosCommunicator>());
+    rclcpp::shutdown();
+    MotorController(1, true, 0);
+    MotorController(2, true, 0);
+    return 0;
 }

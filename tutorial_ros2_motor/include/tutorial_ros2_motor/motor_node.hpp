@@ -3,13 +3,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int64_multi_array.hpp"
+#include "std_msgs/msg/int32_multi_array.hpp" // 추가된 헤더 파일
 #include <pigpiod_if2.h>
 #include <fstream>
 
 #define motor1_dir 19
 #define motor1_pwm 26
-#define motor1_encA 25//23
-#define motor1_encB 8//24
+#define motor1_encA 25 //23
+#define motor1_encB 8  //24
 
 #define motor2_dir 6
 #define motor2_pwm 13
@@ -44,7 +45,7 @@ bool current_direction2;
 int acceleration;
 
 // SetInterrupts
-void Interrupt_Setiing(void);
+void SetInterrupts(void);
 volatile int encoder_count_1;
 volatile int encoder_count_2;
 volatile int encoder_count_1A;
@@ -60,7 +61,8 @@ void Interrupt2B(int pi, unsigned user_gpio, unsigned level, uint32_t tick);
 int SumMotor1Encoder();
 int SumMotor2Encoder();
 void InitEncoders(void);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Initialize
 void Initialize(void);
 
 // Controller
@@ -81,6 +83,8 @@ double rpm_value1;
 double rpm_value2;
 void CalculateRpm();
 void InfoMotors();
+
+// RosCommunicator
 class RosCommunicator : public rclcpp::Node
 {
 public:
@@ -89,6 +93,7 @@ public:
 private:
   void TimerCallback();
   void TeleopCallback(const std_msgs::msg::Int64MultiArray::SharedPtr msg);
+  rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr encoder_publisher_; // 추가된 멤버 변수
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<std_msgs::msg::Int64MultiArray>::SharedPtr subscription_;
   size_t count_;
