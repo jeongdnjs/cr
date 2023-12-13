@@ -479,12 +479,12 @@ void UpdateOdometry()
     int delta_encoder_2 = current_encoder_count_2 - last_encoder_count_2;
 
     // 바퀴가 이동한 거리 계산
-    double distance_left = wheel_round * (delta_encoder_1 / encoder_resolution);
-    double distance_right = wheel_round * (delta_encoder_2 / encoder_resolution);
+    double distance_left = 5.75 * (delta_encoder_1 / 228);
+    double distance_right = 5.75 * (delta_encoder_2 / 228);
 
     // 총 이동 거리 및 방향 변경 계산
     double distance = (distance_left + distance_right) / 2.0;
-    double delta_theta = (distance_right - distance_left) / robot_radius;
+    double delta_theta = (distance_right - distance_left) / 20.52;
 
     // 새 위치 및 방향 업데이트
     odom.x += distance * cos(odom.theta);
@@ -492,10 +492,6 @@ void UpdateOdometry()
     odom.theta += delta_theta;
 
     // 엔코더 카운트 업데이트
-    last_encoder_count_1 = current_encoder_count_1;
-    last_encoder_count_2 = current_encoder_count_2;
-
-     // 엔코더 카운트 업데이트
     last_encoder_count_1 = current_encoder_count_1;
     last_encoder_count_2 = current_encoder_count_2;
 
