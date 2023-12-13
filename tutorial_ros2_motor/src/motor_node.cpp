@@ -4,8 +4,6 @@
  *      Author: Chis Chun
  *      2023-2 크래쉬랩 2조 'BLT' 작업!
  */
-
-#include "std_msgs/msg/int32_multi_array.hpp"
 #include <tutorial_ros2_motor/motor_node.hpp>
 
 void LoadParameters(void)
@@ -451,8 +449,51 @@ void CalculateRpm()
   speed_count2 = 0;
 }
 
+// 오도메트리 정보를 저장하기 위한 구조체
+struct Odometry
+{
+    double x;
+    double y;
+    double theta;
+};
+
+Odometry odom = {0.0, 0.0, 0.0}; // 오도메트리 초기화
+
+void UpdateOdometry()
+{
+    static int last_encoder_count_1 = 0;
+    static int last_encoder_count_2 = 0;
+
+    // 현재 엔코더 값 가져오기
+    int current_encoder_count_1 = SumMotor1Encoder();
+    int current_encoder_count_2 = SumMotor2Encoder();
+
+    // 엔코더 변경분 계산
+    int delta_encoder_1 = current_encoder_count_1 - last_encoder_count_1;
+    int delta_encoder_2 = current_encoder_count_2 - last_encoder_count_2;
+
+    // 바퀴가 이동한 거리 계산
+    double distance_left = wheel_round * (delta_encoder_1 / encoder_resolution);
+    double distance_right = wheel_round * (delta_encoder_2 / encoder_resolution);
+
+    // 총 이동 거리 및 방향 변경 계산
+    double distance = (distance_left + distance_right) / 2.0;
+    double delta_theta = (distance_right - distance_left) / robot_radius;
+
+    // 새 위치 및 방향 업데이트
+    odom.x += distance * cos(odom.theta);
+    odom.y += distance * sin(odom.theta);
+    odom.theta += delta_theta;
+
+    // 엔코더 카운트 업데이트
+    last_encoder_count_1 = current_encoder_count_1;
+    last_encoder_count_2 = current_encoder_count_2;
+}
+
+
 void InfoMotors()
 {
+  UpdateOdometry();
   CalculateRpm();
   printf("\033[2J");
   printf("\033[1;1H");
@@ -462,20 +503,9 @@ void InfoMotors()
   printf("PWM1 : %10.0d    ||  PWM2 : %10.0d\n", current_pwm1, current_pwm2);
   printf("DIR1 :%11s    ||  DIR2 :%11s\n", current_direction1 ? "CW" : "CCW", current_direction2 ? "CW" : "CCW");
   printf("ACC  :%11.0d\n", acceleration);
+  printf("Odometry X : %7.2f m    ||  Y : %7.2f m    ||  Theta : %7.2f rad\n", odom.x, odom.y, odom.theta);
   printf("\n");
 }
-/*
-class RosCommunicator : public rclcpp::Node
-{
-public:
-    RosCommunicator();
-
-private:
-    void TimerCallback();
-    void TeleopCallback(const std_msgs::msg::Int64MultiArray::SharedPtr msg);
-    rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr encoder_publisher_;
-    // 기타 필요한 멤버 변수 및 메소드
-};
 
 RosCommunicator::RosCommunicator()
     : Node("tutorial_ros2_motor"), count_(0)
@@ -484,20 +514,10 @@ RosCommunicator::RosCommunicator()
       100ms, std::bind(&RosCommunicator::TimerCallback, this));
   subscription_ = this->create_subscription<std_msgs::msg::Int64MultiArray>(
       "/tutorial/teleop", 10, std::bind(&RosCommunicator::TeleopCallback, this, _1));
-
-  encoder_publisher_ = this->create_publisher<std_msgs::msg::Int32MultiArray>("encoder_data", 10);
 }
 
 void RosCommunicator::TimerCallback()
 {
-  // 엔코더 데이터를 Int32MultiArray 메시지로 포장
-    std_msgs::msg::Int32MultiArray encoder_msg;
-    encoder_msg.data = {
-        encoder_count_1A, encoder_count_2A, encoder_count_1B, encoder_count_2B
-    };
-
-    // 엔코더 데이터 발행
-    encoder_publisher_->publish(encoder_msg);
   // MotorController(1, true, 100);
   // MotorController(2, true, 100);
   // AccelController(1, true, 100);
@@ -522,14 +542,15 @@ void RosCommunicator::TeleopCallback(const std_msgs::msg::Int64MultiArray::Share
   AccelController(1, tmp_dir1, msg->data[2]);
   AccelController(2, tmp_dir2, msg->data[3]);
 }
-*/
+
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
-    Initialize();
-    rclcpp::spin(std::make_shared<RosCommunicator>());
-    rclcpp::shutdown();
-    MotorController(1, true, 0);
-    MotorController(2, true, 0);
-    return 0;
+  Initialize();
+  rclcpp::spin(std::make_shared<RosCommunicator>());
+
+  rclcpp::shutdown();
+  MotorController(1, true, 0);
+  MotorController(2, true, 0);
+  return 0;
 }

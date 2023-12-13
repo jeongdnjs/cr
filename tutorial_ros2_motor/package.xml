@@ -12,7 +12,6 @@
   <depend>rclcpp</depend>
   <depend>pigpiod_if2</depend>
   <depend>std_msgs</depend>
-  <depend>nav_msgs</depend> <!-- 오도메트리 노드에 필요한 의존성 추가 -->
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
