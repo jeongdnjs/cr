@@ -4,11 +4,10 @@
  *      Author: Chis Chun
  *      2023-2 크래쉬랩 2조 'BLT' 작업!
  */
+
+#include "std_msgs/msg/int32_multi_array.hpp"
 #include <tutorial_ros2_motor/motor_node.hpp>
-double robot_x = 0.0;
-double robot_y = 0.0;
-double robot_theta = 0.0;
-wheel_resolution = 0;
+
 void LoadParameters(void)
 {
   std::ifstream inFile("/home/ubuntu/robot_ws/src/tutorial_ros2_motor/data/motor_input.txt");
@@ -194,13 +193,8 @@ void Initialize(void)
   InitEncoders();
   SetInterrupts();
 
-  robot_x = 0; 
-  robot_y = 0;
-  robot_theta = 0;
-
   wheel_round = 2 * PI * wheel_radius;
   robot_round = 2 * PI * robot_radius;
-  wheel_resolution = encoder_resolution * 4 / wheel_round;
 
   switch_direction = true;
   theta_distance_flag = 0;
@@ -457,32 +451,6 @@ void CalculateRpm()
   speed_count2 = 0;
 }
 
-void CalculateOdometry(double dt)
-{
-  
-
-  // 좌우 바퀴의 이동 거리 계산
-  double distance_left = (encoder_resolution * 4 * (encoder_count_1A + encoder_count_1B)) / (wheel_resolution * 2);
-  double distance_right = (encoder_resolution * 4 * (encoder_count_2A + encoder_count_2B)) / (wheel_resolution * 2);
-
-  // 좌우 바퀴의 이동 거리를 이용한 로봇의 이동 거리 및 회전 각도 계산
-  double distance = (distance_left + distance_right) / 2;
-  double theta = (distance_right - distance_left) / robot_radius;
-
-  // 로봇의 현재 위치 및 방향 업데이트
-  robot_x += distance * cos(robot_theta);
-  robot_y += distance * sin(robot_theta);
-  robot_theta += theta;
-  // 초기 위치 및 방향 초기화 코드
-  if (theta_distance_flag == 0)
-  {
-    robot_x = 0.0;
-    robot_y = 0.0;
-    robot_theta = 0.0;
-    theta_distance_flag = 1;
-  }
-}
-
 void InfoMotors()
 {
   CalculateRpm();
@@ -495,14 +463,19 @@ void InfoMotors()
   printf("DIR1 :%11s    ||  DIR2 :%11s\n", current_direction1 ? "CW" : "CCW", current_direction2 ? "CW" : "CCW");
   printf("ACC  :%11.0d\n", acceleration);
   printf("\n");
-
-  CalculateOdometry(control_cycle / 1000.0);
-  printf("Odometry:\n");
-  printf("  X: %f meters\n", robot_x);
-  printf("  Y: %f meters\n", robot_y);
-  printf("  Theta: %f radians\n", robot_theta);
-  printf("\n");
 }
+
+class RosCommunicator : public rclcpp::Node
+{
+public:
+    RosCommunicator();
+
+private:
+    void TimerCallback();
+    void TeleopCallback(const std_msgs::msg::Int64MultiArray::SharedPtr msg);
+    rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr encoder_publisher_;
+    // 기타 필요한 멤버 변수 및 메소드
+};
 
 RosCommunicator::RosCommunicator()
     : Node("tutorial_ros2_motor"), count_(0)
@@ -511,10 +484,20 @@ RosCommunicator::RosCommunicator()
       100ms, std::bind(&RosCommunicator::TimerCallback, this));
   subscription_ = this->create_subscription<std_msgs::msg::Int64MultiArray>(
       "/tutorial/teleop", 10, std::bind(&RosCommunicator::TeleopCallback, this, _1));
+
+  encoder_publisher_ = this->create_publisher<std_msgs::msg::Int32MultiArray>("encoder_data", 10);
 }
 
 void RosCommunicator::TimerCallback()
 {
+  // 엔코더 데이터를 Int32MultiArray 메시지로 포장
+    std_msgs::msg::Int32MultiArray encoder_msg;
+    encoder_msg.data = {
+        encoder_count_1A, encoder_count_2A, encoder_count_1B, encoder_count_2B
+    };
+
+    // 엔코더 데이터 발행
+    encoder_publisher_->publish(encoder_msg);
   // MotorController(1, true, 100);
   // MotorController(2, true, 100);
   // AccelController(1, true, 100);
