@@ -5,6 +5,12 @@
  *      2023-2 크래쉬랩 2조 'BLT' 작업!
  */
 #include <tutorial_ros2_motor/motor_node.hpp>
+// 전역 변수 선언
+int delta_encoder_1_global = 0;
+int delta_encoder_2_global = 0;
+double distance_left_global = 0.0;
+double distance_right_global = 0.0;
+double delta_theta_global = 0.0;
 
 void LoadParameters(void)
 {
@@ -489,10 +495,15 @@ void UpdateOdometry()
     last_encoder_count_1 = current_encoder_count_1;
     last_encoder_count_2 = current_encoder_count_2;
 
-    printf("Delta Encoder1: %d, Delta Encoder2: %d\n", delta_encoder_1, delta_encoder_2);
-    printf("Distance Left: %f, Distance Right: %f\n", distance_left, distance_right);
-    printf("Delta Theta: %f\n", delta_theta);
-    printf("Updated Odom X: %f, Y: %f, Theta: %f\n", odom.x, odom.y, odom.theta);
+     // 엔코더 카운트 업데이트
+    last_encoder_count_1 = current_encoder_count_1;
+    last_encoder_count_2 = current_encoder_count_2;
+
+    delta_encoder_1_global = delta_encoder_1;
+    delta_encoder_2_global = delta_encoder_2;
+    distance_left_global = distance_left;
+    distance_right_global = distance_right;
+    delta_theta_global = delta_theta;
 }
 
 
@@ -509,6 +520,10 @@ void InfoMotors()
   printf("DIR1 :%11s    ||  DIR2 :%11s\n", current_direction1 ? "CW" : "CCW", current_direction2 ? "CW" : "CCW");
   printf("ACC  :%11.0d\n", acceleration);
   printf("Odometry X : %7.2f m    ||  Y : %7.2f m    ||  Theta : %7.2f rad\n", odom.x, odom.y, odom.theta);
+  printf("Delta Encoder1: %d, Delta Encoder2: %d\n", delta_encoder_1_global, delta_encoder_2_global);
+  printf("Distance Left: %f, Distance Right: %f\n", distance_left_global, distance_right_global);
+  printf("Delta Theta: %f\n", delta_theta_global);
+  printf("Updated Odom X: %f, Y: %f, Theta: %f\n", odom.x, odom.y, odom.theta);
   printf("\n");
 }
 
