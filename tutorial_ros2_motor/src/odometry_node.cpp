@@ -20,36 +20,33 @@ public:
   }
 
 private:
- void encoder_info_callback(const std_msgs::msg::Int64MultiArray::SharedPtr msg)
- {
+  void encoder_info_callback(const std_msgs::msg::Int64MultiArray::SharedPtr msg)
+  {
     int encoder_count_1A = msg->data[0];
     int encoder_count_1B = msg->data[1];
     int encoder_count_2A = msg->data[2];
     int encoder_count_2B = msg->data[3];
 
-    // 전진할 때 1번 엔코더는 증가하고, 2번 엔코더는 감소합니다.
     double distance_left = (encoder_count_1A + encoder_count_1B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
-    double distance_right = -(encoder_count_2A + encoder_count_2B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution; // 부호 변경
+    double distance_right = -(encoder_count_2A + encoder_count_2B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
+
+    double delta_distance = (distance_right + distance_left) / 2.0;
+    double delta_theta = (distance_right - distance_left) / wheel_distance;
 
     update_position(distance_left, distance_right);
 
     double x_position_cm = x_position * 100;
     double y_position_cm = y_position * 100;
-
-    // 라디안을 도로 변환 (x 180/π)
     double theta_deg = theta * (180.0 / M_PI);
 
-    RCLCPP_INFO(this->get_logger(), "Motor 1A: %d, Motor 1B: %d, Motor 2A: %d, Motor 2B: %d, left: %f, right: %f, osition: (%f cm, %f cm), Orientation: %f degrees", encoder_count_1A, encoder_count_1B, encoder_count_2A, encoder_count_2B, distance_left, distance_right, x_position_cm, y_position_cm, theta_deg);
+    RCLCPP_INFO(this->get_logger(), "Motor 1A: %d, Motor 1B: %d, Motor 2A: %d, Motor 2B: %d, left: %f, right: %f, delta_distance: %f, delta_theta: %f, Position: (%f cm, %f cm), Orientation: %f degrees", encoder_count_1A, encoder_count_1B, encoder_count_2A, encoder_count_2B, distance_left, distance_right, delta_distance, delta_theta, x_position_cm, y_position_cm, theta_deg);
   }
 
   void update_position(double distance_left, double distance_right)
   {
-    double delta_distance = (distance_right + distance_left) / 2.0;
-    double delta_theta = (distance_right - distance_left) / wheel_distance;
-
-    theta += delta_theta;
-    x_position += delta_distance * cos(theta);
-    y_position += delta_distance * sin(theta);
+    theta += (distance_right - distance_left) / wheel_distance;
+    x_position += (distance_right + distance_left) / 2.0 * cos(theta);
+    y_position += (distance_right + distance_left) / 2.0 * sin(theta);
   }
 
   double wheel_radius;
