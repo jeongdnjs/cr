@@ -495,6 +495,7 @@ void RosCommunicator::TimerCallback()
   // AccelController(2, true, 100);
   // SwitchTurn(100, 100);
   // ThetaTurnDistanceGo(180,100,30,110);
+  publishEncoderInfo();
   InfoMotors();
 }
 
