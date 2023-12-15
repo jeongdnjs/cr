@@ -39,7 +39,7 @@ private:
     // 라디안을 도로 변환 (x 180/π)
     double theta_deg = theta * (180.0 / M_PI);
 
-    RCLCPP_INFO(this->get_logger(), "Position: (%f cm, %f cm), Orientation: %f degrees", x_position_cm, y_position_cm, theta_deg);
+    RCLCPP_INFO(this->get_logger(), "Encoder counts: Motor 1A: %d, Motor 1B: %d, Motor 2A: %d, Motor 2B: %d Position: (%f cm, %f cm), Orientation: %f degrees", encoder_count_1A, encoder_count_1B, encoder_count_2A, encoder_count_2B, x_position_cm, y_position_cm, theta_deg);
   }
 
   void update_position(double distance_left, double distance_right)
