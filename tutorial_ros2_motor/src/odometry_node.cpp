@@ -48,8 +48,8 @@ private:
         double delta_theta = (distance_right - distance_left) / wheel_distance;
 
         theta += delta_theta;
-        x_position += delta_distance * cos(theta);
-        y_position += delta_distance * sin(theta);
+        x_position += delta_distance * cos(delta_theta); // theta->delta_theta
+        y_position += delta_distance * sin(delta_theta);
     }
 
     double wheel_radius;
