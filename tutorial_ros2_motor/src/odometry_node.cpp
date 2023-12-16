@@ -24,6 +24,8 @@ private:
         int encoder_count_2A = msg->data[2];
         int encoder_count_2B = msg->data[3];
 
+        RCLCPP_INFO(this->get_logger(), "Previous theta: %f radians", theta);
+
         if (encoder_count_1A != last_encoder_count_1A ||
             encoder_count_1B != last_encoder_count_1B ||
             encoder_count_2A != last_encoder_count_2A ||
@@ -33,14 +35,15 @@ private:
             double distance_right = -(encoder_count_2A + encoder_count_2B - last_encoder_count_2A - last_encoder_count_2B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
 
             update_position(distance_left, distance_right);
-
-            RCLCPP_INFO(this->get_logger(), "left: %f, right: %f, Position: (%f cm, %f cm), Orientation: %f degrees", distance_left, distance_right, x_position * 100, y_position * 100, theta * (180.0 / M_PI));
         }
 
         last_encoder_count_1A = encoder_count_1A;
         last_encoder_count_1B = encoder_count_1B;
         last_encoder_count_2A = encoder_count_2A;
         last_encoder_count_2B = encoder_count_2B;
+
+        RCLCPP_INFO(this->get_logger(), "Updated theta: %f radians", theta);
+        RCLCPP_INFO(this->get_logger(), "Position: (%f cm, %f cm), Orientation: %f degrees", x_position * 100, y_position * 100, theta * (180.0 / M_PI));
     }
 
     void update_position(double distance_left, double distance_right) {
