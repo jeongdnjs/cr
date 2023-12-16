@@ -24,36 +24,38 @@ public:
 
 private:
   void encoder_info_callback(const std_msgs::msg::Int64MultiArray::SharedPtr msg) {
-    int encoder_count_1A = msg->data[0];
-    int encoder_count_1B = msg->data[1];
-    int encoder_count_2A = msg->data[2];
-    int encoder_count_2B = msg->data[3];
+  int encoder_count_1A = msg->data[0];
+  int encoder_count_1B = msg->data[1];
+  int encoder_count_2A = msg->data[2];
+  int encoder_count_2B = msg->data[3];
 
-    // 엔코더 값이 변했는지 확인
-    if (encoder_count_1A != last_encoder_count_1A ||
-        encoder_count_1B != last_encoder_count_1B ||
-        encoder_count_2A != last_encoder_count_2A ||
-        encoder_count_2B != last_encoder_count_2B) {
-      
-      double distance_left = (encoder_count_1A + encoder_count_1B - last_encoder_count_1A - last_encoder_count_1B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
-      double distance_right = -(encoder_count_2A + encoder_count_2B - last_encoder_count_2A - last_encoder_count_2B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
+  // 엔코더 값이 변했는지 확인
+  if (encoder_count_1A != last_encoder_count_1A ||
+      encoder_count_1B != last_encoder_count_1B ||
+      encoder_count_2A != last_encoder_count_2A ||
+      encoder_count_2B != last_encoder_count_2B) {
+    
+    double distance_left = (encoder_count_1A + encoder_count_1B - last_encoder_count_1A - last_encoder_count_1B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
+    double distance_right = -(encoder_count_2A + encoder_count_2B - last_encoder_count_2A - last_encoder_count_2B) / 2.0 * (2 * M_PI * wheel_radius) / encoder_resolution;
 
-      update_position(distance_left, distance_right);
-    }
+    update_position(distance_left, distance_right);
 
-    // 엔코더 값 저장
-    last_encoder_count_1A = encoder_count_1A;
-    last_encoder_count_1B = encoder_count_1B;
-    last_encoder_count_2A = encoder_count_2A;
-    last_encoder_count_2B = encoder_count_2B;
-
-    double x_position_cm = x_position * 100;
-    double y_position_cm = y_position * 100;
-    double theta_deg = theta * (180.0 / M_PI);
-
-    RCLCPP_INFO(this->get_logger(), "Position: (%f cm, %f cm), Orientation: %f degrees", x_position_cm, y_position_cm, theta_deg);
+    // 로깅에 distance_left와 distance_right 추가
+    RCLCPP_INFO(this->get_logger(), "Distance Left: %f, Distance Right: %f", distance_left, distance_right);
   }
 
+  // 엔코더 값 저장
+  last_encoder_count_1A = encoder_count_1A;
+  last_encoder_count_1B = encoder_count_1B;
+  last_encoder_count_2A = encoder_count_2A;
+  last_encoder_count_2B = encoder_count_2B;
+
+  double x_position_cm = x_position * 100;
+  double y_position_cm = y_position * 100;
+  double theta_deg = theta * (180.0 / M_PI);
+
+  RCLCPP_INFO(this->get_logger(), "Position: (%f cm, %f cm), Orientation: %f degrees", x_position_cm, y_position_cm, theta_deg);
+}
   void update_position(double distance_left, double distance_right) {
     double delta_distance = (distance_right + distance_left) / 2.0;
     double delta_theta = (distance_right - distance_left) / wheel_distance;
