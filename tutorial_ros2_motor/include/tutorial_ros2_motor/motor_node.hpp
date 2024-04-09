@@ -3,8 +3,12 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int64_multi_array.hpp"
+#include "nav_msgs/msg/odometry.hpp"  // Odometry 메시지 사용을 위해 필요
+#include "tf2_ros/transform_broadcaster.h"  // TF 변환 발행을 위해 필요
+#include "geometry_msgs/msg/transform_stamped.h"  // 변환 메시지 구성을 위해 필요
 #include <pigpiod_if2.h>
 #include <fstream>
+#include <cmath>
 
 #define motor1_dir 19
 #define motor1_pwm 26
@@ -81,6 +85,7 @@ double rpm_value1;
 double rpm_value2;
 void CalculateRpm();
 void InfoMotors();
+
 class RosCommunicator : public rclcpp::Node
 {
 public:

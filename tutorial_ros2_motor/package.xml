@@ -12,6 +12,11 @@
   <depend>rclcpp</depend>
   <depend>pigpiod_if2</depend>
   <depend>std_msgs</depend>
+  <depend>nav_msgs</depend> <!-- 추가됨: 오도메트리 메시지 사용을 위해 필요 -->
+  <depend>tf2_ros</depend> <!-- 추가됨: TF2 변환을 발행하기 위해 필요 -->
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
